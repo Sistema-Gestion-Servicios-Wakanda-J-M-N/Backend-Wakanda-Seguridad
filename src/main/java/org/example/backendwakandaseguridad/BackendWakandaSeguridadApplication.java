@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "org.example.backendwakandaseguridad")
 @EnableDiscoveryClient
 public class BackendWakandaSeguridadApplication {
 
@@ -30,80 +30,69 @@ public class BackendWakandaSeguridadApplication {
 	}
 
 	@Bean
-	CommandLineRunner run(AlertaRepository alertaRepository,
-						  ContactoEmergenciaRepository contactoEmergenciaRepository,
-						  AlertaService alertaService,
-						  EmergenciaService emergenciaService) {
+	CommandLineRunner run(
+			AlertaRepository alertaRepository,
+			ContactoEmergenciaRepository contactoRepository,
+			AlertaService alertaService,
+			EmergenciaService emergenciaService) {
+
 		return args -> {
 			Random random = new Random();
 
-			// 🔥 Crear contactos de emergencia iniciales
-			List<ContactoEmergencia> contactosIniciales = List.of(
+			// Crear contactos de emergencia
+			List<ContactoEmergencia> contactos = List.of(
 					new ContactoEmergencia("Policía", "112"),
 					new ContactoEmergencia("Bomberos", "113"),
 					new ContactoEmergencia("Ambulancia", "114"),
 					new ContactoEmergencia("Rescate", "115")
 			);
 
-			List<ContactoEmergencia> contactos = contactoEmergenciaRepository.saveAll(contactosIniciales);
+			contactoRepository.saveAll(contactos);
 			System.out.println("\n[INFO] Listando contactos de emergencia al inicio...");
-			contactos.forEach(contacto ->
+			contactoRepository.findAll().forEach(contacto ->
 					System.out.println("Contacto de emergencia: " + contacto.getTipoServicio() + " - Teléfono: " + contacto.getNumeroTelefono())
 			);
 
-			// 🔥 Crear alertas iniciales
-			List<Alerta> alertasIniciales = List.of(
-					new Alerta("Incendio", "Incendio en el distrito central de Wakanda", LocalDateTime.now().minusHours(2), EstadoAlerta.ACTIVA),
-					new Alerta("Desastre Natural", "Inundación en la zona norte de Wakanda", LocalDateTime.now().minusDays(1), EstadoAlerta.RESUELTA),
-					new Alerta("Fuga de Gas", "Fuga de gas detectada en la fábrica de procesamiento de vibranium", LocalDateTime.now().minusMinutes(30), EstadoAlerta.ACTIVA),
-					new Alerta("Corte de Energía", "Corte de energía en el distrito industrial", LocalDateTime.now().minusMinutes(45), EstadoAlerta.ACTIVA),
-					new Alerta("Accidente de Tránsito", "Accidente de tráfico en la autopista principal", LocalDateTime.now().minusMinutes(10), EstadoAlerta.ACTIVA),
-					new Alerta("Explosión", "Explosión en la planta de vibranium", LocalDateTime.now().minusMinutes(5), EstadoAlerta.ACTIVA)
+			// Crear alertas iniciales
+			List<Alerta> alertas = List.of(
+					new Alerta("Incendio", "Incendio en la zona industrial", LocalDateTime.now(), EstadoAlerta.ACTIVA),
+					new Alerta("Desastre Natural", "Inundación en el sector norte", LocalDateTime.now(), EstadoAlerta.RESUELTA),
+					new Alerta("Fuga de Gas", "Fuga de gas en la fábrica central", LocalDateTime.now(), EstadoAlerta.ACTIVA),
+					new Alerta("Corte de Energía", "Corte de energía en el distrito sur", LocalDateTime.now(), EstadoAlerta.ACTIVA),
+					new Alerta("Accidente de Tránsito", "Accidente en la avenida principal", LocalDateTime.now(), EstadoAlerta.ACTIVA),
+					new Alerta("Explosión", "Explosión reportada en planta química", LocalDateTime.now(), EstadoAlerta.ACTIVA)
 			);
 
-			List<Alerta> alertas = alertaRepository.saveAll(alertasIniciales);
+			alertaRepository.saveAll(alertas);
 			alertas.forEach(alerta ->
 					System.out.println("Alerta creada: " + alerta.getTipo() + " - Estado: " + alerta.getEstado())
 			);
 
-			// 🔥 Definir el scheduler para mostrar alertas dinámicas de 3 en 3
+			// Tareas programadas
 			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 			scheduler.scheduleAtFixedRate(() -> {
 				System.out.println("\n[INFO] Actualización dinámica de alertas activas");
 
-				String[] ubicaciones = {"Distrito Central", "Zona Norte", "Zona Sur", "Área Industrial", "Calle Principal", "Avenida Principal"};
-				EstadoAlerta[] estadosPosibles = EstadoAlerta.values();
+				String[] ubicaciones = {"Zona Sur", "Distrito Central", "Sector Norte", "Calle Principal", "Avenida Principal"};
+				EstadoAlerta[] estados = EstadoAlerta.values();
 
 				for (int i = 0; i < 3; i++) {
-					// Seleccionar una alerta aleatoria de las 6
-					Alerta alertaSeleccionada = alertas.get(random.nextInt(alertas.size()));
-
-					// Generar ubicación y estado aleatorio para la alerta
-					String nuevaUbicacion = ubicaciones[random.nextInt(ubicaciones.length)];
-					EstadoAlerta nuevoEstado = estadosPosibles[random.nextInt(estadosPosibles.length)];
-
-					// Crear una nueva alerta con estos valores
 					Alerta nuevaAlerta = new Alerta(
-							alertaSeleccionada.getTipo(),
-							alertaSeleccionada.getTipo() + " en " + nuevaUbicacion,
+							alertas.get(random.nextInt(alertas.size())).getTipo(),
+							alertas.get(random.nextInt(alertas.size())).getTipo() + " en " + ubicaciones[random.nextInt(ubicaciones.length)],
 							LocalDateTime.now(),
-							nuevoEstado
+							estados[random.nextInt(estados.length)]
 					);
-
-					// Guardar la nueva alerta en la base de datos
-					Alerta alertaGuardada = alertaRepository.save(nuevaAlerta);
-					System.out.println("[INFO] Nueva alerta activa creada: " + alertaGuardada.getTipo() + " - Descripción: " + alertaGuardada.getDescripcion() + " - Estado: " + alertaGuardada.getEstado());
+					alertaRepository.save(nuevaAlerta);
+					System.out.println("Nueva alerta activa creada: " + nuevaAlerta.getTipo() + " - Descripción: " + nuevaAlerta.getDescripcion() + " - Estado: " + nuevaAlerta.getEstado());
 				}
 
 				System.out.println("\n[INFO] Listando todas las alertas activas...");
-				List<AlertaDTO> alertasActivas = alertaService.listarAlertas().stream()
-						.filter(alerta -> alerta.getEstado().equals("ACTIVA"))
-						.toList();
-
-				alertasActivas.forEach(alerta ->
-						System.out.println("Alerta activa: " + alerta.getTipo() + " - " + alerta.getDescripcion() + " - Estado: " + alerta.getEstado())
-				);
-
+				alertaService.listarAlertas().stream()
+						.filter(alertaDTO -> alertaDTO.getEstado().equals("ACTIVA"))
+						.forEach(alertaDTO ->
+								System.out.println("Alerta activa: " + alertaDTO.getTipo() + " - Descripción: " + alertaDTO.getDescripcion())
+						);
 			}, 0, 30, TimeUnit.SECONDS);
 		};
 	}

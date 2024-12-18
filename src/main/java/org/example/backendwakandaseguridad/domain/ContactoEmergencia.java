@@ -1,14 +1,10 @@
 package org.example.backendwakandaseguridad.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ContactoEmergencia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +13,11 @@ public class ContactoEmergencia {
     private String tipoServicio;
     private String numeroTelefono;
 
-    public ContactoEmergencia(String policía, String number) {
+    public ContactoEmergencia(String tipoServicio, String numeroTelefono) {
+        this.tipoServicio = tipoServicio;
+        this.numeroTelefono = numeroTelefono;
+    }
+
+    public ContactoEmergencia() {
     }
 }

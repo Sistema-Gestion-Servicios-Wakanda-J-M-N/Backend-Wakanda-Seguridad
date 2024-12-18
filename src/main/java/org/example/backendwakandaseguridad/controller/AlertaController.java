@@ -20,8 +20,5 @@ public class AlertaController {
         return alertaService.listarAlertas();
     }
 
-    @PostMapping
-    public void crearAlerta(@RequestBody AlertaDTO alerta) {
-        alertaService.guardarAlerta(alerta);
-    }
+
 }
