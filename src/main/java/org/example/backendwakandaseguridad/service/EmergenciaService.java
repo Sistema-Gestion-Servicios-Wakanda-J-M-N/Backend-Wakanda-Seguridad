@@ -1,7 +1,5 @@
 package org.example.backendwakandaseguridad.service;
 
-
-
 import org.example.backendwakandaseguridad.model.ContactoEmergenciaDTO;
 import org.example.backendwakandaseguridad.repos.ContactoEmergenciaRepository;
 import org.springframework.stereotype.Service;
@@ -19,12 +17,9 @@ public class EmergenciaService {
 
     public List<ContactoEmergenciaDTO> listarContactos() {
         return emergenciaRepository.findAll().stream()
-                .map(contacto -> {
-                    ContactoEmergenciaDTO dto = new ContactoEmergenciaDTO();
-                    dto.setTipoServicio(contacto.getTipoServicio());
-                    dto.setNumeroTelefono(contacto.getNumeroTelefono());
-                    return dto;
-                })
+                .map(contacto -> new ContactoEmergenciaDTO(
+                        contacto.getTipoServicio(),
+                        contacto.getNumeroTelefono()))
                 .collect(Collectors.toList());
     }
 }

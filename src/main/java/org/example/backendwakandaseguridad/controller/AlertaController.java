@@ -1,7 +1,5 @@
 package org.example.backendwakandaseguridad.controller;
 
-
-
 import org.example.backendwakandaseguridad.model.AlertaDTO;
 import org.example.backendwakandaseguridad.service.AlertaService;
 import org.springframework.web.bind.annotation.*;

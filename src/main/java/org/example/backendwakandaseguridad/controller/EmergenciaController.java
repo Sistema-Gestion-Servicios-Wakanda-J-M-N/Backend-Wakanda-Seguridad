@@ -1,7 +1,5 @@
 package org.example.backendwakandaseguridad.controller;
 
-
-
 import org.example.backendwakandaseguridad.model.ContactoEmergenciaDTO;
 import org.example.backendwakandaseguridad.service.EmergenciaService;
 import org.springframework.web.bind.annotation.GetMapping;

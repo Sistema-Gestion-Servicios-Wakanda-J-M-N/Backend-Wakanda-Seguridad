@@ -1,7 +1,5 @@
 package org.example.backendwakandaseguridad.service;
 
-
-
 import org.example.backendwakandaseguridad.domain.Alerta;
 import org.example.backendwakandaseguridad.domain.EstadoAlerta;
 import org.example.backendwakandaseguridad.model.AlertaDTO;
@@ -21,23 +19,21 @@ public class AlertaService {
 
     public List<AlertaDTO> listarAlertas() {
         return alertaRepository.findAll().stream()
-                .map(alerta -> {
-                    AlertaDTO dto = new AlertaDTO();
-                    dto.setTipo(alerta.getTipo());
-                    dto.setDescripcion(alerta.getDescripcion());
-                    dto.setFechaHora(alerta.getFechaHora());
-                    dto.setEstado(alerta.getEstado().name());
-                    return dto;
-                })
+                .map(alerta -> new AlertaDTO(
+                        alerta.getTipo(),
+                        alerta.getDescripcion(),
+                        alerta.getFechaHora(),
+                        alerta.getEstado().name()))
                 .collect(Collectors.toList());
     }
 
     public Alerta guardarAlerta(AlertaDTO alertaDTO) {
-        Alerta alerta = new Alerta();
-        alerta.setTipo(alertaDTO.getTipo());
-        alerta.setDescripcion(alertaDTO.getDescripcion());
-        alerta.setFechaHora(alertaDTO.getFechaHora());
-        alerta.setEstado(EstadoAlerta.valueOf(alertaDTO.getEstado())); // Convertir String a Enum
+        Alerta alerta = new Alerta(
+                alertaDTO.getTipo(),
+                alertaDTO.getDescripcion(),
+                alertaDTO.getFechaHora(),
+                EstadoAlerta.valueOf(alertaDTO.getEstado())
+        );
         return alertaRepository.save(alerta);
     }
 }
